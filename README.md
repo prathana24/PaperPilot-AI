@@ -98,10 +98,10 @@ Every agent is built with dedicated **ChatPromptTemplate** schemas and **LangCha
 
 | Agent | Source File | LCEL Chain Pipeline | Key Responsibilities |
 |---|---|---|---|
-| **1. Summarizer Agent** | [core/agents/summarizer.py](core/agents/summarizer.py) | `ChatPromptTemplate \| llm \| StrOutputParser()` | Produces structured summaries: Objectives, Problem Formulation, Methodology, Findings, Limitations, and Conclusion. |
+| **1. Summarizer Agent** | [core/agents/summarizer.py](core/agents/summarizer.py) | Initial Draft (`ChatPromptTemplate \| llm \| StrOutputParser()`) followed by a Self-Critique & Reflection step (`ReflectionPrompt \| llm \| StrOutputParser()`) | Produces structured summaries: Objectives, Problem Formulation, Methodology, Findings, Limitations, and Conclusion with self-correction against source excerpts. |
 | **2. Concept-Extractor Agent** | [core/agents/concept_extractor.py](core/agents/concept_extractor.py) | `ChatPromptTemplate \| llm \| StrOutputParser()` | Dissects theoretical ideas, algorithmic architecture, quantitative metrics, and ELI5 explanations. |
 | **3. Slide-Generator Agent** | [core/agents/slide_generator.py](core/agents/slide_generator.py) | `ChatPromptTemplate \| llm \| StrOutputParser()` | Generates 6–8 conference slides with bullet points, spoken scripts, and `.pptx` export. |
-| **4. Viva Agent** | [core/agents/viva_agent.py](core/agents/viva_agent.py) | `ChatPromptTemplate \| llm \| StrOutputParser()` | Formulates 10 defense questions (Basic, Intermediate, Advanced) with model answers and tips. |
+| **4. Viva Agent** | [core/agents/viva_agent.py](core/agents/viva_agent.py) | Few-Shot `ChatPromptTemplate` (System + Human/AI Exemplar pairs + Query) \| `llm` \| `StrOutputParser()` | Formulates 10 defense questions (Basic, Intermediate, Advanced) with model answers and tips guided by few-shot academic examples. |
 
 ---
 
@@ -137,7 +137,7 @@ PaperPilot-AI distinguishes between offline operations and live LLM generation:
 |---|---|---|---|---|
 | **1** | **LLM Integration** | **IMPLEMENTED — LIVE API UNTESTED** | [core/config.py](core/config.py) | `get_llm()` initializes `ChatGoogleGenerativeAI(model=get_gemini_model_name())` (`gemini-3.8-flash` default, `gemini-3.5-flash-lite` alternative) safely using keys from `.env` or sidebar overrides. |
 | **2** | **Interactive GUI** | **COMPLETE** | [app.py](app.py) | Streamlit dashboard in institutional white & light-blue (`#0284c7`, `#f8fafc`), with document metrics, uploader, 7 dedicated views, and citation expanders. |
-| **3** | **Prompt Engineering** | **COMPLETE** | [core/agents/](core/agents/), [core/router.py](core/router.py) | Explicit system personas, grounding rules, strict negative constraints, output formatting schemas, and dynamic input slots (`filename`, `context`, `user_query`). |
+| **3** | **Prompt Engineering** | **COMPLETE** | [core/agents/](core/agents/), [core/router.py](core/router.py) | Explicit system personas, grounding rules, strict negative constraints, structured output formatting, few-shot exemplar demonstration in the Viva Agent, and a two-step Reflection & Self-Correction loop in the Summarizer Agent. |
 | **4** | **LangChain Templates & LCEL** | **COMPLETE** | [core/agents/](core/agents/), [core/router.py](core/router.py) | Built entirely on `ChatPromptTemplate` and `prompt \| llm \| StrOutputParser()` pipe syntax. Verified via [test_agents.py](test_agents.py). |
 | **5** | **Agentic RAG** | **COMPLETE** | [core/vectorstore.py](core/vectorstore.py), [core/router.py](core/router.py) | Evaluates when retrieval is required, querying top-k chunks from ChromaDB and supplying grounded context to LCEL chains and offline extractors. |
 | **6** | **Intent Detection and Routing** | **COMPLETE** | [core/router.py](core/router.py) | Classifies queries into 5 intent categories (`summarize`, `extract_concepts`, `generate_slides`, `prepare_viva`, `ask_question`) + ambiguity handling. Verified via [test_router.py](test_router.py). |
